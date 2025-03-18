@@ -1,9 +1,16 @@
 terraform {
-  
   required_providers {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 5.0"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.11"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.7"
     }
   }
 }
@@ -38,6 +45,7 @@ module "eks" {
   cluster_version = "1.25"
   vpc_id          = module.vpc.vpc_id
   subnet_ids      = module.vpc.private_subnets
+  
   # (opcional) control_plane_subnet_ids = module.vpc.private_subnets
 
   cluster_endpoint_public_access = true
@@ -59,27 +67,26 @@ module "eks" {
   }
 }
 
-data "aws_eks_cluster" "cluster" {
-  name = module.eks.cluster_name
-}
-
-data "aws_eks_cluster_auth" "cluster" {
-  name = module.eks.cluster_name
-}
-
 provider "kubernetes" {
-  host                   = data.aws_eks_cluster.cluster.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority[0].data)
-  token                  = data.aws_eks_cluster_auth.cluster.token
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
 
-  # Impede que o provider tente usar configurações locais do kubeconfig
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    command     = "aws"
+    args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
+  }
 }
 
 provider "helm" {
   kubernetes {
-    host                   = data.aws_eks_cluster.cluster.endpoint
-    cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority[0].data)
-    token                  = data.aws_eks_cluster_auth.cluster.token
+    host                   = module.eks.cluster_endpoint
+    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+    exec {
+      api_version = "client.authentication.k8s.io/v1beta1"
+      command     = "aws"
+      args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
+    }
   }
 }
 
@@ -87,9 +94,8 @@ resource "helm_release" "kong" {
   name             = "kong"
   repository       = "https://charts.konghq.com"
   chart            = "kong"
-  version          = "2.13.0" # Ajuste para a versão desejada
+  version          = "2.13.0"
   namespace        = "kong"
   create_namespace = true
-
-  # Exemplo de customização via um arquivo de valores, se necessário.
 }
+
