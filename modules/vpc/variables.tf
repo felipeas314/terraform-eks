@@ -1,31 +1,42 @@
-# modules/vpc/variables.tf
 variable "vpc_name" {
   type        = string
-  description = "Nome da VPC"
+  description = "Name of the VPC"
 }
 
 variable "vpc_cidr" {
   type        = string
-  description = "CIDR principal da VPC"
+  description = "CIDR block for the VPC"
 }
 
-variable "availability_zones" {
+variable "azs" {
   type        = list(string)
-  description = "Lista de zonas de disponibilidade"
+  description = "List of availability zones"
 }
 
 variable "private_subnets" {
   type        = list(string)
-  description = "Lista de subnets privadas"
+  description = "Subnets privadas"
 }
 
 variable "public_subnets" {
   type        = list(string)
-  description = "Lista de subnets públicas"
+  description = "Subnets públicas"
+}
+
+variable "enable_nat_gateway" {
+  type        = bool
+  description = "Whether to enable NAT gateways"
+  default     = true
+}
+
+variable "single_nat_gateway" {
+  type        = bool
+  description = "Whether to use a single NAT gateway"
+  default     = false
 }
 
 variable "tags" {
   type        = map(string)
-  description = "Mapeamento de tags padrão"
+  description = "Tags to be applied to resources"
   default     = {}
 }

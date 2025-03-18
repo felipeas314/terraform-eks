@@ -1,49 +1,17 @@
-# -------------------------------
 # Terraform
-# -------------------------------
-# Diretório criado pelo Terraform para armazenar plugins, caches, etc.
 .terraform/
-
-# Planos de execução (.tfplan)
-*.tfplan
-
-# Estado do Terraform
 *.tfstate
 *.tfstate.backup
+*.tfplan
 
-# Logs de crash do Terraform
-crash.log
-
-# Override files que podem conter senhas ou configs locais
+# Local override variables
 *.tfvars
 *.tfvars.json
 
-# Se você gerar algum .zip ou pacotes temporários (por exemplo, lambda code)
-*.zip
+# Crash logs
+crash.log
 
-# -------------------------------
-# Arquivos de credenciais/sessões
-# -------------------------------
-# AWS CLI ou outras credenciais sensíveis
-.aws/
-*.env
-
-# -------------------------------
-# IDEs e Ferramentas
-# -------------------------------
-# VSCode configs
+# IDE / Editor configs
 .vscode/
-.vscode/*
-!.vscode/extensions.json
-
-# IntelliJ / JetBrains
 .idea/
-*.iml
-
-# Mac OS
 .DS_Store
-
-# Linux & outros
-*.swp
-*.swo
-*.tmp

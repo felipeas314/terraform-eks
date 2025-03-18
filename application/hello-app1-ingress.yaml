@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hello-app1-ingress
+  annotations:
+    kubernetes.io/ingress.class: "kong"
+spec:
+  rules:
+  - host: homolog.mycluster.com
+    http:
+      paths:
+      - path: /app1
+        pathType: Prefix
+        backend:
+          service:
+            name: hello-app1-service
+            port:
+              number: 80

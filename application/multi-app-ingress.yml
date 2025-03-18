@@ -1,0 +1,112 @@
+---
+# Deployment do NGINX
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:stable
+        ports:
+        - containerPort: 80
+---
+# Service para o NGINX
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  labels:
+    app: nginx
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: nginx
+---
+# Deployment do WordPress (exemplo simplificado)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress-deployment
+  labels:
+    app: wordpress
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+  template:
+    metadata:
+      labels:
+        app: wordpress
+    spec:
+      containers:
+      - name: wordpress
+        image: wordpress:php7.4-apache
+        ports:
+        - containerPort: 80
+        env:
+        - name: WORDPRESS_DB_HOST
+          value: "dummy-db-host"
+        - name: WORDPRESS_DB_USER
+          value: "dummy-user"
+        - name: WORDPRESS_DB_PASSWORD
+          value: "dummy-password"
+        - name: WORDPRESS_DB_NAME
+          value: "dummy-db"
+---
+# Service para o WordPress
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-service
+  labels:
+    app: wordpress
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: wordpress
+---
+# Ingress para rotear os caminhos /nginx e /wordpress usando o host homolog.mycluster.com
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: multi-app-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  rules:
+  - host: homolog.mycluster.com
+    http:
+      paths:
+      - path: /nginx
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-service
+            port:
+              number: 80
+      - path: /wordpress
+        pathType: Prefix
+        backend:
+          service:
+            name: wordpress-service
+            port:
+              number: 80

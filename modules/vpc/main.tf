@@ -1,4 +1,3 @@
-# modules/vpc/main.tf
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 4.0"
@@ -6,13 +5,12 @@ module "vpc" {
   name = var.vpc_name
   cidr = var.vpc_cidr
 
-  azs             = slice(var.availability_zones, 0, 3)  # Exemplo, usar 3 AZs
+  azs             = var.azs
   private_subnets = var.private_subnets
   public_subnets  = var.public_subnets
 
-  enable_nat_gateway = true
-  single_nat_gateway = false
+  enable_nat_gateway = var.enable_nat_gateway
+  single_nat_gateway = var.single_nat_gateway
 
-  # Outras configurações como NAT Gateway, tags, etc.
   tags = var.tags
 }

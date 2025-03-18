@@ -1,42 +1,38 @@
-# modules/eks/main.tf
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 19.0"
 
+  # Nome e versão do cluster
   cluster_name    = var.cluster_name
   cluster_version = var.cluster_version
-  subnets         = var.subnets
-  vpc_id          = var.vpc_id
 
-  # Configurações de nós gerenciados:
-  manage_aws_auth          = true
-  create_eks               = true
-  iam_role_name            = "${var.cluster_name}-eks-role"
-  cluster_endpoint_public_access = true
-  cluster_endpoint_private_access = false
+  # Em qual VPC
+  vpc_id = var.vpc_id
 
-  # Node groups - Exemplo de nó gerenciado
-  node_groups = {
-    default = {
-      desired_capacity = var.node_desired_capacity
-      max_capacity     = var.node_max_capacity
-      min_capacity     = var.node_min_capacity
+  # Subnets para os node groups
+  subnet_ids = var.subnet_ids
 
-      instance_types = var.node_instance_types
+  # (opcional) Subnets específicas para o control plane
+  control_plane_subnet_ids = var.control_plane_subnet_ids
 
-      subnet_ids = var.subnets
+  # Se o endpoint do cluster será público
+  cluster_endpoint_public_access = var.cluster_endpoint_public_access
 
-      tags = {
-        Name = "${var.cluster_name}-node-group"
-      }
-    }
-  }
+  # Se o módulo deve gerenciar o configmap aws-auth
+  manage_aws_auth_configmap = var.manage_aws_auth_configmap
 
-  # Habilitar logging
-  cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+  # Se quiser addons nativos (vpc-cni, kube-proxy, coredns etc.)
+  cluster_addons = var.cluster_addons
 
-  # Outras configurações de segurança e etc:
-  enable_irsa = true
+  # EKS Managed Node Groups
+  eks_managed_node_groups = var.eks_managed_node_groups
 
+  # Self Managed Node Groups (Opcional, se usar EC2 “clássico”)
+  self_managed_node_groups = var.self_managed_node_groups
+
+  # Fargate Profiles (caso queira rodar workloads serverless)
+  fargate_profiles = var.fargate_profiles
+
+  # Tags em geral
   tags = var.tags
 }
